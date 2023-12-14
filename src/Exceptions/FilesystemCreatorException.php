@@ -13,13 +13,6 @@ declare(strict_types=1);
 
 namespace Drewlabs\Filesystem\Exceptions;
 
-use Drewlabs\Filesystem\Exceptions\Compact\BaseException as Exception;
-
-class SymbolicLinkEncounteredException extends Exception
+class FilesystemCreatorException extends \Exception
 {
-    public function __construct(string $path)
-    {
-        $message = "Found a symlink at {$path}";
-        parent::__construct(rtrim($message));
-    }
 }

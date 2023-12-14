@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the drewlabs namespace.
+ * This file is part of the Drewlabs package.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -21,6 +21,11 @@ use Drewlabs\Filesystem\Exceptions\ReadFileException;
 use Drewlabs\Filesystem\Exceptions\UnableToRetrieveMetadataException;
 use Drewlabs\Filesystem\Exceptions\WriteOperationFailedException;
 use Drewlabs\Filesystem\Streams\Reader;
+
+use function Drewlabs\Filesystem\Proxy\File;
+use function Drewlabs\Filesystem\Proxy\Path;
+
+use Drewlabs\Psr7Stream\Stream;
 
 /**
  * @method bool   isDirectory()
@@ -72,14 +77,13 @@ class File
         return $this->path_->__toString();
     }
 
-    public function read(int $offset = 0, int $length = null, $lock = false, \Closure $then = null)
+    public function read(int $offset = 0, ?int $length = null, $lock = false, ?\Closure $then = null)
     {
         if ($this->path_->isFile()) {
             $callable = $then ?? static function ($value) {
                 return $value;
             };
-
-            return $callable($lock ? $this->sharedRead($offset, $length) : file_get_contents($this->__toString(), false, null, $offset ?? 0, $length ?? $this->getSize()));
+            return $callable($lock ? $this->sharedRead($offset, $length) : $this->getContents($offset, $length));
         }
         throw new FileNotFoundException($this->__toString());
     }
@@ -97,7 +101,6 @@ class File
         if (($result = @filesize($this->__toString())) === false) {
             throw new UnableToRetrieveMetadataException($this->__toString(), error_get_last()['message'] ?? '', 'filesize');
         }
-
         return $result;
     }
 
@@ -108,7 +111,7 @@ class File
      *
      * @return string
      */
-    public function sharedRead(int $offset = null, int $length = null)
+    public function sharedRead(?int $offset = null, ?int $length = null)
     {
         // Open the file in read binary mode
         $handle = fopen($this->__toString(), 'r');
@@ -136,6 +139,27 @@ class File
     }
 
     /**
+     * Reads entire content into a string
+     * 
+     * @param int $offset 
+     * @param null|int $length 
+     * @return string|false 
+     * @throws UnableToRetrieveMetadataException 
+     */
+    public function getContents(int $offset = 0, ?int $length = null)
+    {
+        // Clear cache so that next call does not have a 
+        clearstatcache(true, $this->__toString());
+        return file_get_contents(
+            $this->__toString(),
+            false,
+            null,
+            $offset ?? 0,
+            $length ?? $this->getSize()
+        );
+    }
+
+    /**
      * Write to the file.
      *
      * @param resource|string|array $contents
@@ -151,8 +175,7 @@ class File
         if (false === $size) {
             throw new WriteOperationFailedException($this->__toString(), error_get_last()['message'] ?? '');
         }
-
-        return new self($this->path_);
+        return File($this->path_->__toString());
     }
 
     /**
@@ -166,7 +189,7 @@ class File
     {
         file_put_contents($this->__toString(), $contents, \FILE_APPEND);
 
-        return new self($this->path_);
+        return File($this->path_->__toString());
     }
 
     /**
@@ -225,7 +248,7 @@ class File
      */
     public function move(string $to)
     {
-        if ((new self($to))->isDirectory()) {
+        if (Path($to)->isDirectory()) {
             $to = sprintf('%s%s%s', $to, \DIRECTORY_SEPARATOR, $this->basename());
         }
 
@@ -245,7 +268,7 @@ class File
      */
     public function copy(string $to)
     {
-        $path = (new self($to));
+        $path = Path($to);
         if ($path->isDirectory()) {
             $to = sprintf('%s%s%s', $to, \DIRECTORY_SEPARATOR, $this->basename());
         }

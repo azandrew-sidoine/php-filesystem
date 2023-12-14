@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the drewlabs namespace.
+ * This file is part of the Drewlabs package.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -17,7 +17,7 @@ use Drewlabs\Filesystem\Exceptions\Compact\BaseException as Exception;
 
 class DeleteDirectoryException extends Exception
 {
-    public function __construct(string $dirname, string $message = null)
+    public function __construct(string $dirname, ?string $message = null)
     {
         $message = "Error while deleting directory at {$dirname}. {$message}";
         parent::__construct(rtrim($message));

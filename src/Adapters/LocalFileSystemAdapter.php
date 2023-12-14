@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the drewlabs namespace.
+ * This file is part of the Drewlabs package.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -25,6 +25,11 @@ use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
+use League\Flysystem\UnableToCheckExistence;
+use Throwable;
+
+use function Drewlabs\Filesystem\Proxy\Directory;
+use function Drewlabs\Filesystem\Proxy\File;
 
 class LocalFileSystemAdapter implements FilesystemAdapter
 {
@@ -77,7 +82,7 @@ class LocalFileSystemAdapter implements FilesystemAdapter
             \dirname($path),
             $this->resolveDirectoryVisibility($config->get(Config::OPTION_DIRECTORY_VISIBILITY))
         );
-        (new File($path))->write($contents, $this->writeFlags);
+        File($path)->write($contents, $this->writeFlags);
         if ($visibility = $config->get(Config::OPTION_VISIBILITY)) {
             $this->setVisibility($this->prefixer->stripPrefix($path), (string) $visibility);
         }
@@ -90,7 +95,7 @@ class LocalFileSystemAdapter implements FilesystemAdapter
             \dirname($path),
             $this->resolveDirectoryVisibility($config->get(Config::OPTION_DIRECTORY_VISIBILITY))
         );
-        (new File($path))->write($contents, $this->writeFlags);
+        File($path)->write($contents, $this->writeFlags);
         if ($visibility = $config->get(Config::OPTION_VISIBILITY)) {
             $this->setVisibility($this->prefixer->stripPrefix($path), (string) $visibility);
         }
@@ -165,7 +170,7 @@ class LocalFileSystemAdapter implements FilesystemAdapter
             \dirname($destinationPath),
             $this->resolveDirectoryVisibility($config->get(Config::OPTION_DIRECTORY_VISIBILITY))
         );
-        (new Path($sourcePath))->isDirectory() ? (new Directory($sourcePath))->move($destinationPath) : (new File($sourcePath))->move($destinationPath);
+        (new Path($sourcePath))->isDirectory() ? Directory($sourcePath)->move($destinationPath) : File($sourcePath)->move($destinationPath);
     }
 
     public function copy(string $source, string $destination, Config $config): void
@@ -176,13 +181,12 @@ class LocalFileSystemAdapter implements FilesystemAdapter
             \dirname($destinationPath),
             $this->resolveDirectoryVisibility($config->get(Config::OPTION_DIRECTORY_VISIBILITY))
         );
-        (new Path($sourcePath))->isDirectory() ? (new Directory($sourcePath))->copy($destinationPath) : (new File($sourcePath))->copy($destinationPath);
+        (new Path($sourcePath))->isDirectory() ? Directory($sourcePath)->copy($destinationPath) : File($sourcePath)->copy($destinationPath);
     }
 
     public function read(string $path): string
     {
-        $location = $this->prefixer->prefix($path);
-        $file = new File($location);
+        $file = File($this->prefixer->prefix($path));
         if ($file->isFile()) {
             return $file->read();
         }
@@ -203,15 +207,14 @@ class LocalFileSystemAdapter implements FilesystemAdapter
 
     public function fileExists(string $location): bool
     {
-        return (new File($this->prefixer->prefix($location)))->isFile();
+        return File($this->prefixer->prefix($location))->isFile();
     }
 
     public function createDirectory(string $path, Config $config): void
     {
-        $location = $this->prefixer->prefix($path);
         $visibility = $config->get(Config::OPTION_VISIBILITY, $config->get(Config::OPTION_DIRECTORY_VISIBILITY));
         $permissions = $this->resolveDirectoryVisibility($visibility);
-        (new Directory($location))->create($permissions, true);
+        Directory($this->prefixer->prefix($path))->create($permissions, true);
     }
 
     public function setVisibility(string $path, string $visibility): void
@@ -233,29 +236,47 @@ class LocalFileSystemAdapter implements FilesystemAdapter
 
     public function mimeType(string $path): FileAttributes
     {
-        $location = $this->prefixer->prefix($path);
 
-        return new FileAttributes($path, null, null, null, (new File($location))->mimeType());
+        return new FileAttributes($path, null, null, null, (File($this->prefixer->prefix($path)))->mimeType());
     }
 
     public function lastModified(string $path): FileAttributes
     {
-        $location = $this->prefixer->prefix($path);
-
-        return new FileAttributes($path, null, null, (new File($location))->lastModified());
+        return new FileAttributes($path, null, null, (File($this->prefixer->prefix($path)))->lastModified());
     }
 
     public function fileSize(string $path): FileAttributes
     {
-        return new FileAttributes($path, (new File($this->prefixer->prefix($path)))->getSize());
+        return new FileAttributes($path, File($this->prefixer->prefix($path))->getSize());
+    }
+
+    /**
+     * Returns the full path to the user provided path.
+     *
+     * @throws \InvalidArgumentException
+     *
+     * @return string
+     */
+    public function url(string $path)
+    {
+        return $this->prefixer->prefix($path);
     }
 
     protected function ensureDirectoryExists(string $dirname, int $visibility)
     {
-        return (new Directory($dirname))->createIfNotExists($visibility, true);
+        return Directory($dirname)->createIfNotExists($visibility, true);
     }
 
-    private function resolveDirectoryVisibility(string $visibility = null): int
+    public function directoryExists(string $path): bool
+    {
+        try {
+            return Directory($this->prefixer->prefix($path))->isDirectory();
+        } catch (Throwable $e) {
+            throw UnableToCheckExistence::forLocation($path, $e);
+        }
+    }
+
+    private function resolveDirectoryVisibility(?string $visibility = null): int
     {
         return null === $visibility ? $this->visibility->defaultForDirectories() : $this->visibility->forDirectory(
             $visibility

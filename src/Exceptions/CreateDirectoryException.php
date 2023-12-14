@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the drewlabs namespace.
+ * This file is part of the Drewlabs package.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -22,7 +22,7 @@ class CreateDirectoryException extends Exception
      */
     private $location_;
 
-    public function __construct(string $dirname, string $message = null)
+    public function __construct(string $dirname, ?string $message = null)
     {
         $message = "Unable to create a directory at {$dirname}. {$message}";
         parent::__construct(rtrim($message));

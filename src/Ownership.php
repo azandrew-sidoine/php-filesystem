@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the drewlabs namespace.
+ * This file is part of the Drewlabs package.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -23,9 +23,9 @@ class Ownership
      * @param string|Path $path
      * @param int         $mode
      *
-     * @return void|string
+     * @return void|int
      */
-    public function chmod($path, int $mode = null)
+    public function chmod($path, ?int $mode = null)
     {
         if (!\is_string($path) && !($path instanceof Path)) {
             throw new \InvalidArgumentException('path parameter must be an instance os PHP string or '.Path::class);
@@ -36,7 +36,7 @@ class Ownership
         }
         error_clear_last();
         if ($mode) {
-            $result = @\chmod($path->__toString(), $mode);
+            $result = @chmod($path->__toString(), $mode);
             if (!$result) {
                 throw new FileNotFoundException($path->__toString(), error_get_last()['message'] ?? '');
             }
@@ -44,6 +44,6 @@ class Ownership
             return $result;
         }
 
-        return mb_substr(sprintf('%o', fileperms($path->__toString())), -4);
+        return (int) mb_substr(sprintf('%o', fileperms($path->__toString())), -4);
     }
 }

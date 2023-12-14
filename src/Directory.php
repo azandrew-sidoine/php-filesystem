@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the drewlabs namespace.
+ * This file is part of the Drewlabs package.
  *
  * (c) Sidoine Azandrew <azandrewdevelopper@gmail.com>
  *
@@ -16,11 +16,10 @@ namespace Drewlabs\Filesystem;
 use Drewlabs\Filesystem\Exceptions\CreateDirectoryException;
 use Drewlabs\Filesystem\Exceptions\DeleteDirectoryException;
 use Drewlabs\Filesystem\Exceptions\MoveException;
-use FilesystemIterator;
+use function Drewlabs\Filesystem\Proxy\Directory;
+use Generator;
 use Iterator;
-use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 
 /**
  * @method bool         isWritable()
@@ -67,7 +66,7 @@ class Directory
         $func_arguments = \func_get_args();
         $arguments = \array_slice($func_arguments, 1);
 
-        return $this->path_->{$name}(...$arguments);
+        return ($this->path_)->{$name}(...$arguments);
     }
 
     public function __toString()
@@ -88,12 +87,12 @@ class Directory
      *
      * If $depth is specified, the implementation loop up to the deepth specified by the user
      *
-     * @throws DirectoryNotFoundException
+     * @throws \Symfony\Component\Finder\Exception\DirectoryNotFoundException
      * @throws \LogicException
      *
-     * @return \Iterator<mixed, SplFileInfo>
+     * @return \Iterator<mixed, \Symfony\Component\Finder\SplFileInfo>
      */
-    public function files(bool $hidden = false, int $depth = null)
+    public function files(bool $hidden = false, ?int $depth = null)
     {
         $finder = null !== $depth ? Finder::create()->depth($depth) : Finder::create();
 
@@ -108,10 +107,10 @@ class Directory
     /**
      * Creates an iterable list of directories in the specified directory.
      *
-     * @throws DirectoryNotFoundException
+     * @throws \Symfony\Component\Finder\Exception\DirectoryNotFoundException
      * @throws \LogicException
      *
-     * @return \Generator<int, string, mixed, void>
+     * @return Generator<int, string, mixed, void>
      */
     public function directories()
     {
@@ -137,7 +136,7 @@ class Directory
             return $this->create($mode, $recursive, $force);
         }
 
-        return $this;
+        return Directory($this->path_->__toString());
     }
 
     /**
@@ -165,7 +164,7 @@ class Directory
             @mkdir($this->__toString(), $mode, $recursive);
         }
 
-        return $this;
+        return Directory($this->path_->__toString());
     }
 
     /**
@@ -177,8 +176,8 @@ class Directory
      */
     public function copy(
         string $destination,
-        int $options = null,
-        array &$invalidPaths = null
+        ?int $options = null,
+        ?array &$invalidPaths = null
     ) {
         if (!$this->isDirectory()) {
             if ($invalidPaths) {
@@ -192,7 +191,7 @@ class Directory
 
         // TODO Create the destination directory if not exists
         // With read-write mode
-        $directory = (new self($destination))->createIfNotExists(0777);
+        $directory = (Directory($destination))->createIfNotExists(0777);
 
         // Create a FileSystemIterator for looping trough the directory
         $iterator = new \FilesystemIterator($this->__toString(), $options);
@@ -205,7 +204,7 @@ class Directory
             $path = $item->getPathname();
             if ($item->isDir()) {
                 // Even though we continue to copy files we need to notify user of failed $path
-                $copied = (new self($path))->copy($target, $options);
+                $copied = (Directory($path))->copy($target, $options);
             } else {
                 // Call the file copy method
                 $copied = (new File($path))->copy($target);
@@ -238,7 +237,7 @@ class Directory
 
         foreach ($items as $item) {
             if ($item->isDir() && !$item->isLink()) {
-                (new self($item->getPathname()))->delete();
+                (Directory($item->getPathname()))->delete();
                 continue;
             }
             // If it's a file path, like a file delete the file

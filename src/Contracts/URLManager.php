@@ -11,10 +11,16 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace Drewlabs\Filesystem\Exceptions;
+namespace Drewlabs\Filesystem\Contracts;
 
-use Drewlabs\Filesystem\Exceptions\Compact\BaseException as Exception;
-
-class ReadFileException extends Exception
+interface URLManager
 {
+    /**
+     * Get the URL for the file at the given path.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    public function url($path);
 }
