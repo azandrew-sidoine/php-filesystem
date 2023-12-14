@@ -1,0 +1,9 @@
+# Todos
+
+- Create a File class [x]
+- Create a Path class [x]
+- Create a Directory class [x]
+- Review the Directory move implementation [x]
+- Integrate league FlySystem [x]
+- Test the whole package after integration of League Flysystem [x]
+
