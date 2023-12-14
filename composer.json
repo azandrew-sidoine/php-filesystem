@@ -32,7 +32,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "symfony/finder": "^5.3",
+        "symfony/finder": "^5.3|^6.3",
         "league/flysystem": "^2.2|^3.0"
     },
     "config": {
