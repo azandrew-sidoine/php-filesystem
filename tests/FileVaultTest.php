@@ -19,8 +19,8 @@ class FileVaultTest extends TestCase
         if (null === self::$key) {
             self::$key = Key::make();
         }
-        // Create the storage directory if it does not exits before running tests
-        Directory(__DIR__ . '/storage/app/')->createIfNotExists();
+        // create the storage directory if it does not exits before running tests
+        Directory(__DIR__ . '/storage/app/')->createIfNotExists(0755, true);
         ConfigurationManager::getInstance()->configure([
             'default' => 'local',
             'disks' => [
@@ -67,6 +67,14 @@ and more recently with desktop publishing software like Aldus PageMaker includin
 EOD;
         // Create file before each test
         File(__DIR__ . '/storage/app/text.txt')->write($contents);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+        if (Directory(__DIR__ . '/storage')->exists()) {
+            Directory(__DIR__ . '/storage')->delete();
+        }
     }
 
     public function test_file_vault_encrypt()

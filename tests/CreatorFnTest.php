@@ -13,6 +13,22 @@ use function Drewlabs\Filesystem\Proxy\Path;
 
 class CreatorFnTest extends TestCase
 {
+    /**
+     * this method is called before each test.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Directory(__DIR__ . '/storage')->createIfNotExists(0755, true);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+        if (Directory(__DIR__ . '/storage')->exists()) {
+            Directory(__DIR__ . '/storage')->delete();
+        }
+    }
 
     public function testCreateFileInstance()
     {
@@ -44,5 +60,4 @@ class CreatorFnTest extends TestCase
         $this->assertIsInt($chmod->chmod(__DIR__ . '/storage'), 'Expect the chmod method to return an integer');
         $this->assertInstanceOf(Ownership::class, $chmod, 'Expect the returned value of the Directory function to be an instance of Ownership class');
     }
-
 }

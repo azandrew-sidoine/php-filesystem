@@ -12,8 +12,26 @@ use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Visibility;
 
+use function Drewlabs\Filesystem\Proxy\Directory;
+
 class LocalFileSystemAdapterTest extends FilesystemAdapterTestCase
 {
+    /**
+     * this method is called before each test.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Directory(__DIR__ . '/storage')->createIfNotExists(0755, true);
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+        if (Directory(__DIR__ . '/storage')->exists()) {
+            Directory(__DIR__ . '/storage')->delete();
+        }
+    }
 
     protected static function createFilesystemAdapter(): FilesystemAdapter
     {
