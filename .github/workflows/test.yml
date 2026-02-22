@@ -1,4 +1,4 @@
-name: CI - Libman Unit Tests
+name: CI - Unit Tests
 
 on:
   - pull_request
