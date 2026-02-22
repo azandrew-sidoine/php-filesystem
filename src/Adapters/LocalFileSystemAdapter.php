@@ -20,18 +20,21 @@ use Drewlabs\Filesystem\Exceptions\SymbolicLinkEncounteredException;
 use Drewlabs\Filesystem\File;
 use Drewlabs\Filesystem\Path;
 use Drewlabs\Filesystem\PathPrefixer;
+use League\Flysystem\ChecksumProvider;
 use League\Flysystem\Config;
 use League\Flysystem\DirectoryAttributes;
 use League\Flysystem\FileAttributes;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use League\Flysystem\UnableToCheckExistence;
+use League\Flysystem\UnableToCopyFile;
+use League\Flysystem\UnableToProvideChecksum;
 use Throwable;
 
 use function Drewlabs\Filesystem\Proxy\Directory;
 use function Drewlabs\Filesystem\Proxy\File;
 
-class LocalFileSystemAdapter implements FilesystemAdapter
+class LocalFileSystemAdapter implements FilesystemAdapter, ChecksumProvider
 {
     /**
      * @var int
@@ -177,11 +180,22 @@ class LocalFileSystemAdapter implements FilesystemAdapter
     {
         $sourcePath = $this->prefixer->prefix($source);
         $destinationPath = $this->prefixer->prefix($destination);
+
+        if ($sourcePath === $destinationPath) {
+            $this->move($source, $destination, $config);
+            return;
+        }
+
         $this->ensureDirectoryExists(
             \dirname($destinationPath),
             $this->resolveDirectoryVisibility($config->get(Config::OPTION_DIRECTORY_VISIBILITY))
         );
-        (new Path($sourcePath))->isDirectory() ? Directory($sourcePath)->copy($destinationPath) : File($sourcePath)->copy($destinationPath);
+
+        $result = (new Path($sourcePath))->isDirectory() ? Directory($sourcePath)->copy($destinationPath) : File($sourcePath)->copy($destinationPath);
+
+        if (!$result) {
+            throw UnableToCopyFile::fromLocationTo($source, $destination);
+        }
     }
 
     public function read(string $path): string
@@ -275,6 +289,21 @@ class LocalFileSystemAdapter implements FilesystemAdapter
             throw UnableToCheckExistence::forLocation($path, $e);
         }
     }
+
+    public function checksum(string $path, Config $config): string
+    {
+        $algo = $config->get('checksum_algo', 'md5');
+        $location = $this->prefixer->prefix($path);
+        error_clear_last();
+        $checksum = @hash_file($algo, $location);
+
+        if ($checksum === false) {
+            throw new UnableToProvideChecksum(error_get_last()['message'] ?? '', $path);
+        }
+
+        return $checksum;
+    }
+
 
     private function resolveDirectoryVisibility(?string $visibility = null): int
     {

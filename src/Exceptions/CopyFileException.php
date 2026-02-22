@@ -17,8 +17,26 @@ use Drewlabs\Filesystem\Exceptions\Compact\BaseException as Exception;
 
 class CopyFileException extends Exception
 {
-    public function __construct(string $path, ?string $errorMesaage = null)
+    /** @var string */
+    private $destination;
+
+    /** @var string */
+    private $path;
+
+    public function __construct(string $path, string $destination, ?string $message = null)
     {
-        parent::__construct(sprintf('Cannot copy file at "%s": %s', $path, $errorMesaage));
+        parent::__construct(sprintf('Cannot copy file at "%s": %s', $path, $message));
+        $this->destination = $destination;
+        $this->path = $path;
+    }
+
+    public function source(): string
+    {
+        return $this->path;
+    }
+
+    public function destination(): string
+    {
+        return $this->destination;
     }
 }

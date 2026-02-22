@@ -24,7 +24,7 @@ class Key
      */
     private $value;
 
-    public function __construct(string $value = null, string $cipher = 'AES-128-CBC')
+    public function __construct(?string $value = null, string $cipher = 'AES-128-CBC')
     {
         $this->value = $value;
         $this->cipher = $cipher ?? 'AES-128-CBC';

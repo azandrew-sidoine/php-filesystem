@@ -25,8 +25,6 @@ use Drewlabs\Filesystem\Streams\Reader;
 use function Drewlabs\Filesystem\Proxy\File;
 use function Drewlabs\Filesystem\Proxy\Path;
 
-use Drewlabs\Psr7Stream\Stream;
-
 /**
  * @method bool   isDirectory()
  * @method bool   exists()
@@ -266,14 +264,17 @@ class File
      *
      * @return bool
      */
-    public function copy(string $to)
+    public function copy(string $dest, ?bool $throws = false)
     {
-        $path = Path($to);
+        $path = Path($dest);
         if ($path->isDirectory()) {
-            $to = sprintf('%s%s%s', $to, \DIRECTORY_SEPARATOR, $this->basename());
+            $dest = sprintf('%s%s%s', $dest, \DIRECTORY_SEPARATOR, $this->basename());
         }
-        if (!($result = @copy($this->__toString(), $to))) {
-            throw new CopyFileException($this->__toString(), $to);
+
+        $result = @copy($this->__toString(), $dest);
+        if (!$result && $throws) {
+            $errors = error_get_last();
+            throw new CopyFileException($this->__toString(), $dest, $errors['message'] ?? 'unknown error');
         }
 
         return $result;

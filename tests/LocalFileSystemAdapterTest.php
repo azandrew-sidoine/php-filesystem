@@ -17,8 +17,7 @@ class LocalFileSystemAdapterTest extends FilesystemAdapterTestCase
 
     protected static function createFilesystemAdapter(): FilesystemAdapter
     {
-        // return new LocalLocalFilesystemAdapter(__DIR__ . '/../storage');
-        return new LocalFilesystemAdapter(__DIR__ . '/../storage');
+        return new LocalFilesystemAdapter(__DIR__ . '/storage');
     }
 
     /**

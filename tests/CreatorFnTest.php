@@ -16,14 +16,14 @@ class CreatorFnTest extends TestCase
 
     public function testCreateFileInstance()
     {
-        $file = LocalFile(__DIR__ . '/../storage/format.txt');
+        $file = LocalFile(__DIR__ . '/storage/format.txt');
 
         $this->assertInstanceOf(FileClass::class, $file, 'Expect the File method to return an instance of File class');
     }
 
     public function testCreateDirectoryInstance()
     {
-        $directory = Directory(__DIR__ . '/../storage/');
+        $directory = Directory(__DIR__ . '/storage');
 
         $this->assertTrue($directory->isDirectory(), 'Expect the directory to be a file directory');
 
@@ -32,7 +32,7 @@ class CreatorFnTest extends TestCase
 
     public function testCreatePathInstance()
     {
-        $path = Path(__DIR__ . '/../storage/');
+        $path = Path(__DIR__ . '/storage');
         $this->assertTrue($path->exists());
         $this->assertInstanceOf(Path::class, $path, 'Expect the returned value of the Directory function to be an instance of Path class');
     }
@@ -40,8 +40,8 @@ class CreatorFnTest extends TestCase
     public function testCreateOwnershipInstance()
     {
         $chmod = Chmod();
-        $this->assertTrue($chmod->chmod(Path(__DIR__ . '/../storage/'), 0755));
-        $this->assertIsInt($chmod->chmod(__DIR__ . '/../storage/'), 'Expect the chmod method to return an integer');
+        $this->assertTrue($chmod->chmod(Path(__DIR__ . '/storage'), 0755));
+        $this->assertIsInt($chmod->chmod(__DIR__ . '/storage'), 'Expect the chmod method to return an integer');
         $this->assertInstanceOf(Ownership::class, $chmod, 'Expect the returned value of the Directory function to be an instance of Ownership class');
     }
 

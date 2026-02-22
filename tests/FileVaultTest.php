@@ -20,13 +20,13 @@ class FileVaultTest extends TestCase
             self::$key = Key::make();
         }
         // Create the storage directory if it does not exits before running tests
-        Directory(__DIR__ . '/../storage/app/')->createIfNotExists();
+        Directory(__DIR__ . '/storage/app/')->createIfNotExists();
         ConfigurationManager::getInstance()->configure([
             'default' => 'local',
             'disks' => [
                 'local' => [
                     'driver' => 'local',
-                    'root' => (string)(Path(__DIR__ . '/../storage/app/')->canonicalize())
+                    'root' => (string)(Path(__DIR__ . '/storage/app/')->canonicalize())
                 ],
                 'public' => [
                     'driver' => 'local',
@@ -66,7 +66,7 @@ It was popularised in the 1960s with the release of Letraset sheets containing L
 and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
 EOD;
         // Create file before each test
-        File(__DIR__ . '/../storage/app/text.txt')->write($contents);
+        File(__DIR__ . '/storage/app/text.txt')->write($contents);
     }
 
     public function test_file_vault_encrypt()

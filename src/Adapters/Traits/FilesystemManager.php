@@ -28,8 +28,8 @@ use League\Flysystem\Ftp\FtpAdapter;
 use League\Flysystem\Ftp\FtpConnectionOptions;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter as CachedAdapter;
 use League\Flysystem\PathNormalizer;
-use League\Flysystem\PhpseclibV2\SftpAdapter;
-use League\Flysystem\PhpseclibV2\SftpConnectionProvider;
+use League\Flysystem\PhpseclibV3\SftpAdapter;
+use League\Flysystem\PhpseclibV3\SftpConnectionProvider;
 use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
 use League\Flysystem\Visibility;
 

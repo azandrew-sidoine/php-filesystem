@@ -5,7 +5,7 @@ use Drewlabs\Filesystem\Contracts\Filesystem;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use League\Flysystem\Ftp\FtpAdapter;
 use PHPUnit\Framework\TestCase;
-use League\Flysystem\PhpseclibV2\SftpAdapter;
+use League\Flysystem\PhpseclibV3\SftpAdapter;
 
 use function Drewlabs\Filesystem\Proxy\FilesystemManager;
 

@@ -20,7 +20,7 @@ use Drewlabs\Filesystem\Helpers\FilesystemManager;
 use Drewlabs\Filesystem\Helpers\URLHelper;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as S3Adapter;
 use League\Flysystem\Ftp\FtpAdapter;
-use League\Flysystem\PhpseclibV2\SftpAdapter;
+use League\Flysystem\PhpseclibV3\SftpAdapter;
 
 class URLManager implements ContractsURLManager
 {
